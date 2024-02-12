@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="IrreoExFirmware.DisplayConfig"
+             Title="DisplayConfig">
+
+    <VerticalStackLayout Padding="10">
+
+        <Image Source="irreo.png" MaximumWidthRequest="250"
+               HorizontalOptions="Center"/>
+
+        <Label Text="Firmware Shipment Process" TextColor="White" FontSize="Medium" VerticalTextAlignment="Center" HorizontalOptions="Center" />
+
+        <HorizontalStackLayout Padding="30" Spacing="10">
+
+
+            <VerticalStackLayout Padding="20" Spacing="20" VerticalOptions="Center">
+
+                <StackLayout HorizontalOptions="Center">
+                    <HorizontalStackLayout>
+                        <VerticalStackLayout VerticalOptions="CenterAndExpand" >
+                            <FlexLayout Direction="Column" AlignContent="SpaceBetween">
+                                <RadioButton Margin="0,10,0,0" CheckedChanged="RadioBtnSelectVersion" Content="Edge Com Lora L2" />
+                                <RadioButton CheckedChanged="RadioBtnSelectVersion" Content="Edge Com Lora L8" />
+                                <RadioButton CheckedChanged="RadioBtnSelectVersion" Content="Edge Com Lora L16"/>
+                                <RadioButton CheckedChanged="RadioBtnSelectVersion" Content="Edge Com Lora Meteo" />
+                            </FlexLayout>
+                        </VerticalStackLayout>
+                        
+                        <VerticalStackLayout Padding="50, 0" VerticalOptions="Center">
+                            <Picker x:Name="pickerRev" 
+                                Title="Rev" 
+                                BackgroundColor="Grey" 
+                                SelectedIndexChanged="OnPickerRevSelected" 
+                                HorizontalOptions="Start"
+                                SelectedIndex="0">
+
+                                <Picker.ItemsSource>
+                                    <x:Array Type="{x:Type x:String}">
+                                        <x:String>Rev17</x:String>
+                                        <x:String>Rev18</x:String>
+                                    </x:Array>
+                                </Picker.ItemsSource>
+
+                            </Picker>
+
+                            <Picker x:Name="pickerVersion" Title="Version"
+                                BackgroundColor="Grey" 
+                                SelectedIndexChanged="OnPickerVersionSelected" 
+                                ItemDisplayBinding ="{Binding Name}"
+                                HorizontalOptions="Start" />
+
+                            <Picker x:Name="pickerCOM" Title="COM"
+                                BackgroundColor="Grey" 
+                                ItemDisplayBinding="{Binding Name}"
+                                SelectedIndexChanged="OnPickerCOMSelected" 
+                                HorizontalOptions="Start" />
+                        </VerticalStackLayout>
+                    </HorizontalStackLayout>
+                    <HorizontalStackLayout Padding="30" Spacing="10">
+                        <Button Text="Flash Firmware" BackgroundColor="Teal" Clicked="FlashFirmwareBtn" Padding="10" WidthRequest="250"/>
+                        <Label x:Name="FlashPercentage" Text="0%" Padding="10" FontSize="Medium" />
+                    </HorizontalStackLayout>
+                </StackLayout>
+
+            </VerticalStackLayout>
+
+
+            <VerticalStackLayout Padding="20" Spacing="20" VerticalOptions="Center">
+
+            <StackLayout Padding="20" Spacing="16">
+                <Entry x:Name="entry"
+                   Placeholder="Device UID (16 Digits)"
+                   TextChanged="OnEntryTextChanged"
+                   Completed="OnEntryCompleted" 
+                       MaxLength="16"/>
+
+                <Entry x:Name="entry2"
+                   Placeholder="XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+                   TextChanged="OnEntryTextChanged"
+                   Completed="OnEntryCompleted" />
+
+                </StackLayout>
+
+
+                <HorizontalStackLayout Spacing="40">
+
+                    <Button Text="Device Info" 
+                        BackgroundColor="Teal" 
+                        Clicked="FlashFirmwareBtn" 
+                        Padding="5" 
+                        WidthRequest="200"/>
+
+                    <Button Text="Register" 
+                            BackgroundColor="Teal" 
+                            Clicked="FlashFirmwareBtn" 
+                            Padding="5" 
+                            WidthRequest="200"/>
+
+                </HorizontalStackLayout>
+
+                <HorizontalStackLayout Spacing="40">
+
+                    <Button Text="TEST DEVICE WORKING" 
+                        BackgroundColor="Teal" 
+                        Clicked="FlashFirmwareBtn" 
+                        Padding="10" WidthRequest="200" HorizontalOptions="Start"/>
+                   
+                    <Entry x:Name="entry3"
+                       Placeholder="TEST PASSED / NO"
+                       TextChanged="OnEntryTextChanged"
+                       Completed="OnEntryCompleted" />
+
+
+                </HorizontalStackLayout>
+
+
+            </VerticalStackLayout>
+
+         </HorizontalStackLayout>
+
+    </VerticalStackLayout>
+
+</ContentPage>
+    
+    
