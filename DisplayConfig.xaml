@@ -60,7 +60,9 @@
                     <HorizontalStackLayout Padding="30" Spacing="10">
                         <Button Text="Flash Firmware" BackgroundColor="Teal" Clicked="FlashFirmwareBtn" Padding="10" WidthRequest="250"/>
                         <Label x:Name="FlashPercentage" Text="0%" Padding="10" FontSize="Medium" />
+                        
                     </HorizontalStackLayout>
+                    <Slider Minimum="0" Maximum="100" ValueChanged="Slider_OnValueChanged"/>
                 </StackLayout>
 
             </VerticalStackLayout>

@@ -1,6 +1,8 @@
 using System.Diagnostics;
 using System.IO.Compression;
 using System.IO.Ports;
+using MS.WindowsAPICodePack.Internal;
+using Microsoft.WindowsAPICodePack.Shell;
 
 
 namespace IrreoExFirmware;
@@ -156,6 +158,21 @@ public partial class DisplayConfig : ContentPage
         var port = pickerCOM.SelectedItem as NamedResult<string>;
         _port = port.Result;
         Debug.WriteLine($"Port selected: {_port}");
+    }
+
+    private void Slider_OnValueChanged(object? sender, ValueChangedEventArgs e)
+    {
+
+		int maxProgressbarValue = 100;
+		var taskbarInstance = Microsoft.WindowsAPICodePack.Taskbar.TaskbarManager.Instance;
+		taskbarInstance.SetProgressState(Microsoft.WindowsAPICodePack.Taskbar.TaskbarProgressBarState.Normal);
+		taskbarInstance.SetProgressValue((int)e.NewValue, maxProgressbarValue);
+
+		if (e.NewValue >= maxProgressbarValue)
+		{
+			taskbarInstance.SetProgressState(Microsoft.WindowsAPICodePack.Taskbar.TaskbarProgressBarState.NoProgress);
+		}
+
     }
 
     public void FlashFirmwareBtn(object sender, EventArgs e)
