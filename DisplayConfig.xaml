@@ -11,7 +11,7 @@
 
         <Label Text="Firmware Shipment Process" TextColor="White" FontSize="Medium" VerticalTextAlignment="Center" HorizontalOptions="Center" />
 
-        <HorizontalStackLayout Padding="30" Spacing="10">
+        <HorizontalStackLayout Padding="30" Spacing="50">
 
 
             <VerticalStackLayout Padding="20" Spacing="20" VerticalOptions="Center">
@@ -55,10 +55,12 @@
                                 ItemDisplayBinding="{Binding Name}"
                                 SelectedIndexChanged="OnPickerCOMSelected" 
                                 HorizontalOptions="Start" />
+                            
                         </VerticalStackLayout>
                     </HorizontalStackLayout>
                     <HorizontalStackLayout Padding="30" Spacing="10">
-                        <Button Text="Flash Firmware" BackgroundColor="Teal" Clicked="FlashFirmwareBtn" Padding="10" WidthRequest="250"/>
+                        
+                        <Button x:Name="FlashBtn" Text="Flash Firmware" BackgroundColor="Teal" Clicked="FlashFirmwareBtn" Padding="10" WidthRequest="250" IsEnabled="False"/>
                         <Label x:Name="FlashPercentage" Text="0%" Padding="10" FontSize="Medium" />
                         
                     </HorizontalStackLayout>
@@ -70,50 +72,51 @@
 
             <VerticalStackLayout Padding="20" Spacing="20" VerticalOptions="Center">
 
-            <StackLayout Padding="20" Spacing="16">
-                <Entry x:Name="entry"
-                   Placeholder="Device UID (16 Digits)"
-                   TextChanged="OnEntryTextChanged"
-                   Completed="OnEntryCompleted" 
-                       MaxLength="16"/>
+            <StackLayout Padding="15" Spacing="10">
 
-                <Entry x:Name="entry2"
-                   Placeholder="XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
-                   TextChanged="OnEntryTextChanged"
-                   Completed="OnEntryCompleted" />
+                    <Entry x:Name="entry2"
+                           Placeholder="DEVICE INFO DISPLAY"
+                           TextChanged="OnEntryTextChanged"
+                           Completed="OnEntryCompleted" />
+
+                    <Button Text="Device Info" 
+                            BackgroundColor="Teal" 
+                            Clicked="GetDeviceInfo" 
+                            Padding="10" 
+                            WidthRequest="200"/>
+
+                    <Entry  x:Name="entry"
+                            Placeholder="Enter Device UID (16 Digits) to register"
+                            TextChanged="OnEntryTextChanged"
+                            Completed="OnEntryCompleted" 
+                            MaxLength="16"/>
+
+                    <Button x:Name="Register" 
+                            Text="Register" 
+                            
+                            BackgroundColor="Teal" 
+                            Clicked="RegisterDeviceBtn" 
+                            Padding="5" 
+                            WidthRequest="200"/>
 
                 </StackLayout>
 
 
                 <HorizontalStackLayout Spacing="40">
 
-                    <Button Text="Device Info" 
-                        BackgroundColor="Teal" 
-                        Clicked="FlashFirmwareBtn" 
-                        Padding="5" 
-                        WidthRequest="200"/>
-
-                    <Button Text="Register" 
-                            BackgroundColor="Teal" 
-                            Clicked="FlashFirmwareBtn" 
-                            Padding="5" 
-                            WidthRequest="200"/>
 
                 </HorizontalStackLayout>
 
-                <HorizontalStackLayout Spacing="40">
+                <HorizontalStackLayout Spacing="35">
 
-                    <Button Text="TEST DEVICE WORKING" 
+                    <Button Text="Test device" 
                         BackgroundColor="Teal" 
                         Clicked="FlashFirmwareBtn" 
-                        Padding="10" WidthRequest="200" HorizontalOptions="Start"/>
-                   
-                    <Entry x:Name="entry3"
-                       Placeholder="TEST PASSED / NO"
-                       TextChanged="OnEntryTextChanged"
-                       Completed="OnEntryCompleted" />
+                        Padding="5" WidthRequest="180" HorizontalOptions="Start"/>
 
-
+                    <Label x:Name="TestResults" Text="Test Passed/Failed!!" TextColor="Green" Padding="10" FontSize="Medium" />
+                    
+                    
                 </HorizontalStackLayout>
 
 

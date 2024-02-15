@@ -32,7 +32,7 @@ namespace IrreoExFirmware
                             MinimumWidth = 1000,
                             MinimumHeight = 600
                         };
-                        //Set size and center on screen using WinUIEx extension method
+                        
                         window.CenterOnScreen(900, 600);
                         window.UpdateMaximumSize(window1);
                         window.UpdateMinimumSize(window1);

@@ -30,7 +30,6 @@ public partial class DisplayConfig : ContentPage
 
         */
 
-
     string      _baseLocation   = "D:\\ExFiles";
     string      _tmpLocation    = "D:\\ExFiles\\tmp";
     string      _boardLocation;
@@ -49,9 +48,9 @@ public partial class DisplayConfig : ContentPage
 	{
 		InitializeComponent();
         
-
         pickerCOM.ItemsSource = SerialPort.GetPortNames().Select(s => new NamedResult<string> { Name = s, Result = s }).ToList();
         pickerCOM.SelectedItem = pickerCOM.ItemsSource[0];
+        Register.IsEnabled = false;
 
     }
 
@@ -117,6 +116,7 @@ public partial class DisplayConfig : ContentPage
         return new List<NamedResult<Version>>();
     }
 
+
     public void OnPickerRevSelected(object sender, EventArgs e)
     {
 
@@ -139,9 +139,10 @@ public partial class DisplayConfig : ContentPage
             {
                 _versionSelected = null;
             }
-
         }
     }
+
+
 
     public void OnPickerVersionSelected(object sender, EventArgs e)
     {
@@ -149,8 +150,11 @@ public partial class DisplayConfig : ContentPage
         {
             _versionSelected = ((NamedResult <Version>)pickerVersion.ItemsSource[pickerVersion.SelectedIndex]).Result;
             Debug.WriteLine($"Version selected: {_versionSelected}");
+            FlashBtn.IsEnabled = true;
         }
     }
+
+
 
     public void OnPickerCOMSelected(object sender, EventArgs e)
     {
@@ -159,6 +163,8 @@ public partial class DisplayConfig : ContentPage
         _port = port.Result;
         Debug.WriteLine($"Port selected: {_port}");
     }
+
+
 
     private void Slider_OnValueChanged(object? sender, ValueChangedEventArgs e)
     {
@@ -172,8 +178,8 @@ public partial class DisplayConfig : ContentPage
 		{
 			taskbarInstance.SetProgressState(Microsoft.WindowsAPICodePack.Taskbar.TaskbarProgressBarState.NoProgress);
 		}
-
     }
+
 
     public void FlashFirmwareBtn(object sender, EventArgs e)
     {
@@ -200,52 +206,32 @@ public partial class DisplayConfig : ContentPage
         }
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     public void OnEntryTextChanged(object sender, EventArgs e)
     {
+        if ((entry.Text).Length == 16)
+        {
+            Register.IsEnabled = true;
+        }
+        else
+        {
+            Register.IsEnabled = false;
+        }
+    }
+   
+    public void RegisterDeviceBtn(object sender, EventArgs e)
+    {
+
     }
 
     public void OnEntryCompleted(object sender, EventArgs e)
     {
-
+        
     }
 
-      
+
+    public void GetDeviceInfo(object sender, EventArgs e)
+    {
+    //has to be done. return the info of the device which is the uid.  maybe it would be good if we get this info from the flash button itself..
+    }
+
 }
-
-
-/*
-        foreach (string folderName in folderNames)
-        {
-            folderPicker.Items.Add(folderName);
-        }
-
-        // Handle folder selection
-        folderPicker.SelectedIndexChanged += (sender, args) =>
-        {
-            if (folderPicker.SelectedIndex >= 0)
-            {
-                string selectedFolderName = folderPicker.Items[folderPicker.SelectedIndex];
-                // Now you can use the selected folder name as needed
-                // (e.g., display it or perform further actions)
-            }
-        };
- */
