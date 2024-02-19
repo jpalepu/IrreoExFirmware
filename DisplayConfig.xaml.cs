@@ -110,16 +110,21 @@ public partial class DisplayConfig : ContentPage
             }
 
             var files = Directory.GetFiles(path);
-            return files.Select(f => new NamedResult<Version>
+            return files.Select(f =>
             {
-                Name = f.Split("\\").Last().Substring(0, 8),
-                Result = Version.Parse(f.Split("\\").Last().Substring(1, 7))
+                var fileName = f.Split("\\").Last();
+
+                return new NamedResult<Version>
+                {
+                    Name = fileName.Substring(0, fileName.Length - 4),
+                    Result = Version.Parse(fileName.Substring(1, fileName.Length - 5))
+                };
             });
+            
         }
 
         return new List<NamedResult<Version>>();
     }
-
     public void OnPickerRevSelected(object sender, EventArgs e)
     {
 
@@ -144,8 +149,6 @@ public partial class DisplayConfig : ContentPage
             }
         }
     }
-
-
     public void OnPickerVersionSelected(object sender, EventArgs e)
     {
         if (pickerVersion.ItemsSource.Count > 0 && pickerVersion.SelectedIndex >= 0)
@@ -155,7 +158,6 @@ public partial class DisplayConfig : ContentPage
             FlashBtn.IsEnabled = true;
         }
     }
-
     public void OnPickerCOMSelected(object sender, EventArgs e)
     {
         var pickerCOM = sender as Picker;
@@ -163,28 +165,12 @@ public partial class DisplayConfig : ContentPage
         _port = port.Result;
         Debug.WriteLine($"Port selected: {_port}");
     }
-
-    private void Slider_OnValueChanged(object? sender, ValueChangedEventArgs e)
-    {
-
-		int maxProgressbarValue = 100;
-		var taskbarInstance = Microsoft.WindowsAPICodePack.Taskbar.TaskbarManager.Instance;
-		taskbarInstance.SetProgressState(Microsoft.WindowsAPICodePack.Taskbar.TaskbarProgressBarState.Normal);
-		taskbarInstance.SetProgressValue((int)e.NewValue, maxProgressbarValue);
-
-		if (e.NewValue >= maxProgressbarValue)
-		{
-			taskbarInstance.SetProgressState(Microsoft.WindowsAPICodePack.Taskbar.TaskbarProgressBarState.NoProgress);
-		}
-    }
-
     public async void FlashFirmwareBtn(object sender, EventArgs e)
     {
         if (_boardLocation != null && _boardRev != null)
         {
             var finalLocation = Path.Combine(_boardLocation, pickerRev.ItemsSource[pickerRev.SelectedIndex].ToString());
             var fileName = "v" + _versionSelected.ToString() + ".zip";
-
 
             Debug.WriteLine($"Firmware file: {Path.Combine(finalLocation, fileName)}");
 
@@ -200,49 +186,52 @@ public partial class DisplayConfig : ContentPage
 
             ZipFile.ExtractToDirectory(Path.Combine(finalLocation, fileName), _tmpLocation);
 
-            var task = Task.Run(async () => { return await _executor.ExecuteBuild(_port, _tmpLocation); });
-            var task2 = task.ContinueWith(flashTask =>
-            {
-                if (flashTask.IsCompleted)
-                {
-                    var result = flashTask.Result;
+            
 
-                }
-            });
+            //_executor.OnFlashProgress += UpdateFlashPercentage;
+            var result = await _executor.ExecuteBuild(_port, _tmpLocation);
+            //_executor.OnFlashProgress -= UpdateFlashPercentage;
+
+            Debug.WriteLine($"Flash result: {result}");
 
         }
     }
-    public void GetDeviceInfo(object sender, EventArgs e)
+
+    private void UpdateFlashPercentage (object sender, string s)
+    {
+        FlashPercentage.Text = s;
+    }
+
+    public async void GetDeviceInfo(object sender, EventArgs e)
     {
         //has to be done. return the info of the device which is the uid.  maybe it would be good if we get this info from the flash button itself..
-        Task.Run(async () =>
-        {
-            string DeviceUID = await _executor.ExecuteMonitor(_port);
-            entry2.Text = DeviceUID;
-        });
+        entry2.IsEnabled = false;
+        entry2.Text = "Retrieving data...";
+        DeviceInfo.IsEnabled = false;
+        string DeviceUID = await _executor.ExecuteMonitor(_port);
+        entry2.Text = DeviceUID;
+        entry2.IsEnabled = true;
+        DeviceInfo.IsEnabled = true;
     }
-
-    public void OnEntryTextChanged(object sender, EventArgs e)
+    private void Slider_OnValueChanged(object? sender, ValueChangedEventArgs e)
     {
-        if ((entry.Text).Length == 16)
-        {
-            Register.IsEnabled = true;
-        }
-        else
-        {
-            Register.IsEnabled = false;
-        }
+
+		int maxProgressbarValue = 100;
+		var taskbarInstance = Microsoft.WindowsAPICodePack.Taskbar.TaskbarManager.Instance;
+		taskbarInstance.SetProgressState(Microsoft.WindowsAPICodePack.Taskbar.TaskbarProgressBarState.Normal);
+		taskbarInstance.SetProgressValue((int)e.NewValue, maxProgressbarValue);
+
+		if (e.NewValue >= maxProgressbarValue)
+		{
+			taskbarInstance.SetProgressState(Microsoft.WindowsAPICodePack.Taskbar.TaskbarProgressBarState.NoProgress);
+		}
     }
    
     public void RegisterDeviceBtn(object sender, EventArgs e)
     {
 
     }
-
-    public void OnEntryCompleted(object sender, EventArgs e)
-    {
-        
-    }
+   
 
 
 }

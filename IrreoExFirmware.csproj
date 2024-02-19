@@ -88,7 +88,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<None Update=".\build.ps1" CopyToOutputDirectory="PreserveNewest" />
+		<None Update=".\monitor.ps1" CopyToOutputDirectory="PreserveNewest" />
+		<None Update=".\flash.ps1" CopyToOutputDirectory="PreserveNewest" />
 	</ItemGroup>
 
 	<ItemGroup Condition="$(TargetFramework.Contains('-windows')) == true">

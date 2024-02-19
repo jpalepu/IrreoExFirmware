@@ -76,10 +76,10 @@
 
                     <Entry x:Name="entry2"
                            Placeholder="DEVICE INFO DISPLAY"
-                           TextChanged="OnEntryTextChanged"
-                           Completed="OnEntryCompleted" />
+                    />
 
-                    <Button Text="Device Info" 
+                    <Button x:Name="DeviceInfo"
+                            Text="Device Info" 
                             BackgroundColor="Teal" 
                             Clicked="GetDeviceInfo" 
                             Padding="10" 
@@ -87,8 +87,6 @@
 
                     <Entry  x:Name="entry"
                             Placeholder="Enter Device UID (16 Digits) to register"
-                            TextChanged="OnEntryTextChanged"
-                            Completed="OnEntryCompleted" 
                             MaxLength="16"/>
 
                     <Button x:Name="Register" 

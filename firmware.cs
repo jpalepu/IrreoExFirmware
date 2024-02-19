@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 
 
@@ -33,8 +34,12 @@ namespace IrreoExFirmware
     public class Executor : IDisposable
     {
 
-        Process _proc = null;
+        Process                 _proc = null;
         CancellationTokenSource _cts = new CancellationTokenSource();
+
+
+        public event EventHandler<string> OnFlashProgress;
+
         public void Dispose()
         {
             if (_proc != null)
@@ -52,49 +57,116 @@ namespace IrreoExFirmware
 
         public async Task<bool> ExecuteBuild(string COM, string firmwarePath)
         {
+            if (_proc != null)
+            {
+                _proc.Close();
+                _proc = null;
+            }
+
+            if (_cts.IsCancellationRequested)
+            {
+                _cts = new CancellationTokenSource();
+            }
+
             string findID = @"MAC: ([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})";
-            ProcessStartInfo startInfo = new ProcessStartInfo() { FileName = "powershell.exe", 
-                        Arguments = $".\\flash.ps1 -Port {COM} -FirmwarePath {firmwarePath}" };
+            //ProcessStartInfo startInfo = new ProcessStartInfo() { FileName = "powershell.exe", 
+            //            Arguments = $".\\flash.ps1 -Port {COM} -FirmwarePath {firmwarePath}" };
+
+            string findFlashPerc = @"Writing at 0x[0-9A-Fa-f\.]{11} \([0-9]+ %\)";
+
+            Debug.WriteLine($"Current work directory: {AppDomain.CurrentDomain.BaseDirectory}");
+            ProcessStartInfo startInfo = new ProcessStartInfo()
+            {
+                FileName = "powershell.exe",
+                Arguments = $"{Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "flash.ps1")} -Port {COM} -FirmwarePath {firmwarePath}",
+                WorkingDirectory = AppDomain.CurrentDomain.BaseDirectory,
+                CreateNoWindow = true,
+            };
 
             startInfo.RedirectStandardOutput = true;
             _proc = new Process() { StartInfo = startInfo };
-            _proc.Start();
-
-            var output = await _proc.StandardOutput.ReadToEndAsync();
-            Debug.WriteLine(output);
-
-            Match match = Regex.Match(output, findID);
-            Debug.WriteLine("Flashing Successfull...");
-
-            if (match.Success)
-            {
-                var id = match.Value;
-                Debug.WriteLine("The Mac ID of Device is: " + id);
-                return true;
-            }
-            else
-            {
-                Debug.WriteLine("No ID found in the output.");
+            var result = _proc.Start();
+            if (!result)
                 return false;
+
+
+            _proc.OutputDataReceived += (sender, e) =>
+            {
+                string data = e.Data;
+                if (data != null)
+                {
+                    Debug.WriteLine(data);
+                    Match macMatch = Regex.Match(data, findID);
+                    if (macMatch.Success)
+                    {
+                        var id = macMatch.Value;
+                        Debug.WriteLine("The Mac ID of Device is: " + id);
+                    }
+
+                    Match percMatch = Regex.Match(data, findFlashPerc);
+                    if (percMatch.Success)
+                    {
+                        var startIdx = percMatch.Value.IndexOf('(');
+                        var stopIdx = percMatch.Value.IndexOf(' ', startIdx);
+
+
+                        var perc = percMatch.Value.Substring(startIdx + 1, stopIdx - startIdx - 1);
+                        Debug.WriteLine("Perc: " + perc);
+
+                        OnFlashProgress?.Invoke(this, perc);
+                    }
+                }
+            };
+            _proc.BeginOutputReadLine();
+
+            try
+            {
+                await _proc.WaitForExitAsync(_cts.Token);
             }
+            catch
+            {
+
+            }
+            finally
+            {
+                Debug.WriteLine("Process closed!");
+            }
+
+            if (_proc.ExitCode != 0)
+                return false;
+
+            return true;
         }
         public async Task<string> ExecuteMonitor(string COM)
         {
             if (_proc != null)
             {
-                _proc.Kill();
+                _proc.Close();
                 _proc = null;
+            }
+
+            if (_cts.IsCancellationRequested)
+            {
+                _cts = new CancellationTokenSource();
             }
 
             string deviceUID = null;
 
             string deviceUIDRegex = @"Value: ([0-9A-Fa-f]+)";
-            ProcessStartInfo startInfo = new ProcessStartInfo() { FileName = "powershell.exe", Arguments = $".\\monitor.ps1 -Port {COM}", };
+            Debug.WriteLine($"Current work directory: {AppDomain.CurrentDomain.BaseDirectory}");
+            ProcessStartInfo startInfo = new ProcessStartInfo() 
+            { 
+                FileName = "powershell.exe", 
+                Arguments = $"{Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "monitor.ps1")} -Port {COM}",
+                WorkingDirectory = AppDomain.CurrentDomain.BaseDirectory,
+                CreateNoWindow = true,
+            };
             _proc = new Process() { StartInfo = startInfo, };
             // Console.WriteLine("Starting..");
 
             _proc.StartInfo.RedirectStandardOutput = true;
             _proc.StartInfo.RedirectStandardError = true;
+            
             _proc.OutputDataReceived += (sender, e) =>
             {
                 string data = e.Data;
@@ -114,6 +186,7 @@ namespace IrreoExFirmware
 
             _proc.Start();
             _proc.BeginOutputReadLine();
+            //_proc.BeginErrorReadLine();
             try
             {
                 await _proc.WaitForExitAsync(_cts.Token);
@@ -124,8 +197,13 @@ namespace IrreoExFirmware
             }
             finally
             {
-                Debug.WriteLine("Python process ended!");
+                _proc.Close();
+                _proc = null;
+                //_proc.Kill(true);
+                
+                Debug.WriteLine("Process ended!");
             }
+
             return deviceUID;
         }
     }
