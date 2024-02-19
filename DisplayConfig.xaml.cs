@@ -212,6 +212,15 @@ public partial class DisplayConfig : ContentPage
 
         }
     }
+    public void GetDeviceInfo(object sender, EventArgs e)
+    {
+        //has to be done. return the info of the device which is the uid.  maybe it would be good if we get this info from the flash button itself..
+        Task.Run(async () =>
+        {
+            string DeviceUID = await _executor.ExecuteMonitor(_port);
+            entry2.Text = DeviceUID;
+        });
+    }
 
     public void OnEntryTextChanged(object sender, EventArgs e)
     {
@@ -235,9 +244,5 @@ public partial class DisplayConfig : ContentPage
         
     }
 
-    public void GetDeviceInfo(object sender, EventArgs e)
-    {
-    //has to be done. return the info of the device which is the uid.  maybe it would be good if we get this info from the flash button itself..
-    }
 
 }

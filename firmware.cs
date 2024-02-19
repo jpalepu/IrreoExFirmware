@@ -56,45 +56,28 @@ namespace IrreoExFirmware
             ProcessStartInfo startInfo = new ProcessStartInfo() { FileName = "powershell.exe", 
                         Arguments = $".\\flash.ps1 -Port {COM} -FirmwarePath {firmwarePath}" };
 
-            //startInfo.RedirectStandardInput = true;
             startInfo.RedirectStandardOutput = true;
+            _proc = new Process() { StartInfo = startInfo };
+            _proc.Start();
 
-            try
+            var output = await _proc.StandardOutput.ReadToEndAsync();
+            Debug.WriteLine(output);
+
+            Match match = Regex.Match(output, findID);
+            Debug.WriteLine("Flashing Successfull...");
+
+            if (match.Success)
             {
-                _proc = new Process() { StartInfo = startInfo };
-
-                _proc.Start();
-
-                var output = await _proc.StandardOutput.ReadToEndAsync();
-                Debug.WriteLine(output);
-
-                Match match = Regex.Match(output, findID);
-                Debug.WriteLine("Flashing Successfull...");
-
-                if (match.Success)
-                {
-                    var id = match.Value;
-                    Debug.WriteLine("The Mac ID of Device is: " + id);
-                    return true;
-                }
-                else
-                {
-                    Debug.WriteLine("No ID found in the output.");
-                    return false;
-                }
+                var id = match.Value;
+                Debug.WriteLine("The Mac ID of Device is: " + id);
+                return true;
             }
-            catch
+            else
             {
-
-            }
-            finally
-            {
-                Debug.WriteLine("Build & Flash Process Complete...");
+                Debug.WriteLine("No ID found in the output.");
+                return false;
             }
         }
-
-
-
         public async Task<string> ExecuteMonitor(string COM)
         {
             if (_proc != null)
