@@ -6,28 +6,29 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
+
 namespace IrreoExFirmware
 {
-    public class Programm
-    {
-        static void Main2(string[] args)
-        {
+    //public class Programm
+    //{
+    //    static async void FirmwareMain(string[] args)
+    //    {
 
-            using (var exec = new Executor())
-            {
-                Console.CancelKeyPress += (sender, eventArgs) =>
-                {
-                    eventArgs.Cancel = true;
-                    exec.Cancel();
-                };
+    //        using (var exec = new Executor())
+    //        {
+    //            Console.CancelKeyPress += (sender, eventArgs) =>
+    //            {
+    //                eventArgs.Cancel = true;
+    //                exec.Cancel();
+    //            };
 
-                _ = exec.ExecuteBuild();
-                var task = exec.ExecuteMonitor();
-                task.Wait();
-                Console.WriteLine("Found deviceUID: " + task.Result);
-            }
-        }
-    }
+    //            _ = await exec.ExecuteBuild();
+    //            var task = exec.ExecuteMonitor();
+    //            task.Wait();
+    //            Console.WriteLine("Found deviceUID: " + task.Result);
+    //        }
+    //    }
+    //}
 
     public class Executor : IDisposable
     {
@@ -49,40 +50,52 @@ namespace IrreoExFirmware
         }
 
 
-        public async Task<bool> ExecuteBuild()
+        public async Task<bool> ExecuteBuild(string COM, string firmwarePath)
         {
             string findID = @"MAC: ([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})";
-            ProcessStartInfo startInfo = new ProcessStartInfo() { FileName = "powershell.exe", Arguments = ".\\flash.ps1 -Port " };
+            ProcessStartInfo startInfo = new ProcessStartInfo() { FileName = "powershell.exe", 
+                        Arguments = $".\\flash.ps1 -Port {COM} -FirmwarePath {firmwarePath}" };
 
-            startInfo.RedirectStandardInput = true;
+            //startInfo.RedirectStandardInput = true;
             startInfo.RedirectStandardOutput = true;
 
-            _proc.StandardInput.Flush();
-            _proc.StandardInput.Close();
-
-            _proc = new Process() { StartInfo = startInfo };
-
-            _proc.Start();
-
-            var output = _proc.StandardOutput.ReadToEnd();
-            Console.WriteLine(output);
-
-            Match match = Regex.Match(output, findID);
-            Console.WriteLine("Flashing Successfull...");
-
-            if (match.Success)
+            try
             {
-                var id = match.Value;
-                Console.WriteLine("The Mac ID of Device is: " + id);
-                return true;
+                _proc = new Process() { StartInfo = startInfo };
+
+                _proc.Start();
+
+                var output = await _proc.StandardOutput.ReadToEndAsync();
+                Debug.WriteLine(output);
+
+                Match match = Regex.Match(output, findID);
+                Debug.WriteLine("Flashing Successfull...");
+
+                if (match.Success)
+                {
+                    var id = match.Value;
+                    Debug.WriteLine("The Mac ID of Device is: " + id);
+                    return true;
+                }
+                else
+                {
+                    Debug.WriteLine("No ID found in the output.");
+                    return false;
+                }
             }
-            else
+            catch
             {
-                Console.WriteLine("No ID found in the output.");
-                return false;
+
+            }
+            finally
+            {
+                Debug.WriteLine("Build & Flash Process Complete...");
             }
         }
-        public async Task<string> ExecuteMonitor()
+
+
+
+        public async Task<string> ExecuteMonitor(string COM)
         {
             if (_proc != null)
             {
@@ -93,7 +106,7 @@ namespace IrreoExFirmware
             string deviceUID = null;
 
             string deviceUIDRegex = @"Value: ([0-9A-Fa-f]+)";
-            ProcessStartInfo startInfo = new ProcessStartInfo() { FileName = "powershell.exe", Arguments = ".\\monitor.ps1", };
+            ProcessStartInfo startInfo = new ProcessStartInfo() { FileName = "powershell.exe", Arguments = $".\\monitor.ps1 -Port {COM}", };
             _proc = new Process() { StartInfo = startInfo, };
             // Console.WriteLine("Starting..");
 
@@ -104,13 +117,13 @@ namespace IrreoExFirmware
                 string data = e.Data;
                 if (data != null)
                 {
-                    Console.WriteLine(data);
+                    Debug.WriteLine(data);
                     Match match = Regex.Match(data, deviceUIDRegex);
                     if (match.Success)
                     {
                         Group value = match.Groups[1];
                         deviceUID = value.Value;
-                        Console.WriteLine("DeviceUID: " + deviceUID);
+                        Debug.WriteLine("DeviceUID: " + deviceUID);
                         _cts.Cancel();
                     }
                 }
@@ -128,7 +141,7 @@ namespace IrreoExFirmware
             }
             finally
             {
-                Console.WriteLine("Python process ended!");
+                Debug.WriteLine("Python process ended!");
             }
             return deviceUID;
         }

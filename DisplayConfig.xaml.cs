@@ -38,6 +38,10 @@ public partial class DisplayConfig : ContentPage
     Version?    _versionSelected; 
     string      _port;
 
+    Executor    _executor = new Executor();
+
+
+
     public class NamedResult<T>
     {
         public string   Name    { get; set; }
@@ -116,7 +120,6 @@ public partial class DisplayConfig : ContentPage
         return new List<NamedResult<Version>>();
     }
 
-
     public void OnPickerRevSelected(object sender, EventArgs e)
     {
 
@@ -143,7 +146,6 @@ public partial class DisplayConfig : ContentPage
     }
 
 
-
     public void OnPickerVersionSelected(object sender, EventArgs e)
     {
         if (pickerVersion.ItemsSource.Count > 0 && pickerVersion.SelectedIndex >= 0)
@@ -154,8 +156,6 @@ public partial class DisplayConfig : ContentPage
         }
     }
 
-
-
     public void OnPickerCOMSelected(object sender, EventArgs e)
     {
         var pickerCOM = sender as Picker;
@@ -163,8 +163,6 @@ public partial class DisplayConfig : ContentPage
         _port = port.Result;
         Debug.WriteLine($"Port selected: {_port}");
     }
-
-
 
     private void Slider_OnValueChanged(object? sender, ValueChangedEventArgs e)
     {
@@ -180,8 +178,7 @@ public partial class DisplayConfig : ContentPage
 		}
     }
 
-
-    public void FlashFirmwareBtn(object sender, EventArgs e)
+    public async void FlashFirmwareBtn(object sender, EventArgs e)
     {
         if (_boardLocation != null && _boardRev != null)
         {
@@ -202,6 +199,16 @@ public partial class DisplayConfig : ContentPage
             }
 
             ZipFile.ExtractToDirectory(Path.Combine(finalLocation, fileName), _tmpLocation);
+
+            var task = Task.Run(async () => { return await _executor.ExecuteBuild(_port, _tmpLocation); });
+            var task2 = task.ContinueWith(flashTask =>
+            {
+                if (flashTask.IsCompleted)
+                {
+                    var result = flashTask.Result;
+
+                }
+            });
 
         }
     }
@@ -227,7 +234,6 @@ public partial class DisplayConfig : ContentPage
     {
         
     }
-
 
     public void GetDeviceInfo(object sender, EventArgs e)
     {
