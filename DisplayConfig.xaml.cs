@@ -186,21 +186,28 @@ public partial class DisplayConfig : ContentPage
 
             ZipFile.ExtractToDirectory(Path.Combine(finalLocation, fileName), _tmpLocation);
 
-            
+
 
             //_executor.OnFlashProgress += UpdateFlashPercentage;
             var result = await _executor.ExecuteBuild(_port, _tmpLocation);
             //_executor.OnFlashProgress -= UpdateFlashPercentage;
 
             Debug.WriteLine($"Flash result: {result}");
+            //if(result == true)
+            //{
+            //    FlashPercentage.Text = "Flashed";
+            //    FlashPercentage.TextColor = Colors.Green;
+          
+            //}
+
 
         }
     }
 
-    private void UpdateFlashPercentage (object sender, string s)
-    {
-        FlashPercentage.Text = s;
-    }
+    //private void UpdateFlashPercentage(object sender, string s)
+    //{
+    //    FlashPercentage.Text = s;
+    //}
 
     public async void GetDeviceInfo(object sender, EventArgs e)
     {
@@ -224,6 +231,7 @@ public partial class DisplayConfig : ContentPage
 		if (e.NewValue >= maxProgressbarValue)
 		{
 			taskbarInstance.SetProgressState(Microsoft.WindowsAPICodePack.Taskbar.TaskbarProgressBarState.NoProgress);
+            
 		}
     }
    

@@ -25,8 +25,8 @@ namespace IrreoExFirmware
                     {
                         IWindow window1 = new Window()
                         {
-                            MaximumWidth = 1000,
-                            MaximumHeight = 600,
+                            MaximumWidth = 1200,
+                            MaximumHeight = 700,
                             Width = 1000,
                             Height = 600,
                             MinimumWidth = 1000,

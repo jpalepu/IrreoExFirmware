@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
@@ -31,16 +32,36 @@ namespace IrreoExFirmware
     //    }
     //}
 
-    public class Executor : IDisposable
+    public class Executor : INotifyPropertyChanged
     {
 
         Process                 _proc = null;
         CancellationTokenSource _cts = new CancellationTokenSource();
 
+        public event PropertyChangedEventHandler PropertyChanged;
+        
+            private string _progressState;
 
-        public event EventHandler<string> OnFlashProgress;
+            public string ProgressState
+            {
+                get => _progressState;
+                set
+                {
+                    if (_progressState != value)
+                    {
+                        _progressState = value;
+                        OnPropertyChanged(nameof(ProgressState));
+                    }
+                }
+            }
 
-        public void Dispose()
+            public void OnPropertyChanged(string propertyName)
+            {
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            }
+
+
+    public void Dispose()
         {
             if (_proc != null)
             {
@@ -110,10 +131,13 @@ namespace IrreoExFirmware
                         var stopIdx = percMatch.Value.IndexOf(' ', startIdx);
 
 
-                        var perc = percMatch.Value.Substring(startIdx + 1, stopIdx - startIdx - 1);
-                        Debug.WriteLine("Perc: " + perc);
+                        ProgressState = percMatch.Value.Substring(startIdx + 1, stopIdx - startIdx - 1);
 
-                        OnFlashProgress?.Invoke(this, perc);
+                        Debug.WriteLine("Progress %: " + ProgressState);
+                        OnPropertyChanged(nameof(ProgressState));
+                        //OnFlashProgress?.Invoke(this, perc);
+
+
                     }
                 }
             };
@@ -206,6 +230,81 @@ namespace IrreoExFirmware
 
             return deviceUID;
         }
+
+
+
+        public async Task<string> ExecuteTest(string COM)
+        {
+            if (_proc != null)
+            {
+                _proc.Close();
+                _proc = null;
+            }
+
+            if (_cts.IsCancellationRequested)
+            {
+                _cts = new CancellationTokenSource();
+            }
+
+            string deviceUID = null;
+
+            string deviceUIDRegex = @"Value: ([0-9A-Fa-f]+)";
+            Debug.WriteLine($"Current work directory: {AppDomain.CurrentDomain.BaseDirectory}");
+            ProcessStartInfo startInfo = new ProcessStartInfo()
+            {
+                FileName = "powershell.exe",
+                Arguments = $"{Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "monitor.ps1")} -Port {COM}",
+                WorkingDirectory = AppDomain.CurrentDomain.BaseDirectory,
+                CreateNoWindow = true,
+            };
+            _proc = new Process() { StartInfo = startInfo, };
+            // Console.WriteLine("Starting..");
+
+            _proc.StartInfo.RedirectStandardOutput = true;
+            _proc.StartInfo.RedirectStandardError = true;
+
+            _proc.OutputDataReceived += (sender, e) =>
+            {
+                string data = e.Data;
+                if (data != null)
+                {
+                    Debug.WriteLine(data);
+                    Match match = Regex.Match(data, deviceUIDRegex);
+                    if (match.Success)
+                    {
+                        Group value = match.Groups[1];
+                        deviceUID = value.Value;
+                        Debug.WriteLine("DeviceUID: " + deviceUID);
+                        _cts.Cancel();
+                    }
+                }
+            };
+
+            _proc.Start();
+            _proc.BeginOutputReadLine();
+            //_proc.BeginErrorReadLine();
+            try
+            {
+                await _proc.WaitForExitAsync(_cts.Token);
+            }
+            catch
+            {
+
+            }
+            finally
+            {
+                _proc.Close();
+                _proc = null;
+                //_proc.Kill(true);
+
+                Debug.WriteLine("Process ended!");
+            }
+
+            return deviceUID;
+        }
+    
+    
+    
     }
 }
 

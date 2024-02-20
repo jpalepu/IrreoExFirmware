@@ -1,8 +1,14 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:exec="clr-namespace:IrreoExFirmware"
              x:Class="IrreoExFirmware.DisplayConfig"
              Title="DisplayConfig">
+    
+    
+    <ContentPage.BindingContext>
+        <exec:Executor ProgressState ="0 %"/>
+    </ContentPage.BindingContext>
 
     <VerticalStackLayout Padding="10">
 
@@ -61,7 +67,7 @@
                     <HorizontalStackLayout Padding="30" Spacing="10">
                         
                         <Button x:Name="FlashBtn" Text="Flash Firmware" BackgroundColor="Teal" Clicked="FlashFirmwareBtn" Padding="10" WidthRequest="250" IsEnabled="False"/>
-                        <Label x:Name="FlashPercentage" Text="0%" Padding="10" FontSize="Medium" />
+                        <Label x:Name="FlashPercentage" Text="{Binding ProgressState}"   Padding="10" FontSize="Medium" />
                         
                     </HorizontalStackLayout>
                     <Slider Minimum="0" Maximum="100" ValueChanged="Slider_OnValueChanged"/>
