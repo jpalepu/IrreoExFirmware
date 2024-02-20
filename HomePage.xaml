@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:exec="clr-namespace:IrreoExFirmware"
+             x:Class="IrreoExFirmware.HomePage"
+             Title="">
+    
+    
+    <ContentPage.BindingContext>
+        <exec:Executor x:Name="MyExecutor" />
+    </ContentPage.BindingContext>
+
+    <ScrollView>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="0.25*" />
+                <RowDefinition Height="0.05*" />
+                <RowDefinition Height="0.7*" />
+            </Grid.RowDefinitions>
+
+            <Image Grid.Row="0" Source="irreo.png" 
+                   HorizontalOptions="Center" MaximumWidthRequest="300"/>
+
+            <Label Grid.Row="1" Text="Firmware Shipment Process" TextColor="{AppThemeBinding Light=Black, Dark=White}" 
+                   FontSize="Medium" VerticalTextAlignment="Center" HorizontalOptions="Center" />
+
+
+            <Grid Grid.Row="2" Padding="30" >
+
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="0.9*" />
+                </Grid.RowDefinitions>
+
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="0.5*" />
+                    <ColumnDefinition Width="0.5*" />
+                </Grid.ColumnDefinitions>
+
+                <Grid Grid.Row="0" Grid.Column="0" Padding="10,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="0.15*" />
+                        <RowDefinition Height="0.15*" />
+                        <RowDefinition Height="0.15*" />
+                        <RowDefinition Height="0.15*" />
+                        <RowDefinition Height="0.1*" />
+                        <RowDefinition Height="0.15*" />
+                    </Grid.RowDefinitions>
+
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="0.7*" />
+                        <ColumnDefinition Width="0.3*" />
+                    </Grid.ColumnDefinitions>
+
+                    <RadioButton Grid.Row="0" Grid.Column="0" Margin="0,10,0,0" CheckedChanged="RadioBtnSelectVersion" Content="Edge Com Lora L2" />
+                    <RadioButton Grid.Row="1" Grid.Column="0" CheckedChanged="RadioBtnSelectVersion" Content="Edge Com Lora L8" />
+                    <RadioButton Grid.Row="2" Grid.Column="0" CheckedChanged="RadioBtnSelectVersion" Content="Edge Com Lora L16"/>
+                    <RadioButton Grid.Row="3" Grid.Column="0" CheckedChanged="RadioBtnSelectVersion" Content="Edge Com Lora Meteo" />
+
+                    <Picker x:Name="PickerRev" Grid.Row="0" Grid.Column="1"
+                        Title="Rev" 
+                        BackgroundColor="{AppThemeBinding Light=LightGrey, Dark=Grey}" 
+                        SelectedIndexChanged="OnPickerRevSelected" 
+                        SelectedIndex="0">
+
+                        <Picker.ItemsSource>
+                            <x:Array Type="{x:Type x:String}">
+                                <x:String>Rev17</x:String>
+                                <x:String>Rev18</x:String>
+                            </x:Array>
+                        </Picker.ItemsSource>
+
+                    </Picker>
+
+                    <Picker x:Name="PickerVersion" Grid.Row="1" Grid.Column="1" Title="Version"
+                        BackgroundColor="{AppThemeBinding Light=LightGrey, Dark=Grey}" 
+                        SelectedIndexChanged="OnPickerVersionSelected"
+                        ItemDisplayBinding ="{Binding Name}" />
+
+                    <Picker x:Name="PickerCOM" Grid.Row="2" Grid.Column="1" Title="COM"
+                        BackgroundColor="{AppThemeBinding Light=LightGrey, Dark=Grey}" 
+                        ItemDisplayBinding="{Binding Name}"
+                        SelectedIndexChanged="OnPickerCOMSelected"  />
+
+                    <Button x:Name="FlashBtn" Grid.Row="5" Grid.Column="0" 
+                            Text="Flash Firmware" BackgroundColor="{AppThemeBinding Light=MediumSeaGreen, Dark=Teal}" 
+                            Clicked="FlashFirmwareBtn" Padding="10"  
+                            IsEnabled="False"/>
+                
+                    <Label x:Name="FlashPercentage" Grid.Row="5" Grid.Column="1" 
+                           Text="{Binding ProgressState, StringFormat='{0} %'}" 
+                           VerticalOptions="Center" HorizontalOptions="Center" FontSize="Medium" />
+
+                </Grid>
+
+                <Grid Grid.Row="0" Grid.Column="1" Padding="10,0" ColumnSpacing="10">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="0.1*" />
+                        <RowDefinition Height="0.2*" />
+                        <RowDefinition Height="0.2*" />
+                        <RowDefinition Height="0.2*" />
+                        <RowDefinition Height="0.1*" />
+                    </Grid.RowDefinitions>
+
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="0.33*" />
+                        <ColumnDefinition Width="0.33*" />
+                        <ColumnDefinition Width="0.33*" />
+                    </Grid.ColumnDefinitions>
+
+                    <Entry x:Name="InfoResultEntry" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" IsReadOnly="True"
+                           Placeholder="DEVICE INFO DISPLAY"
+                    />
+
+                    <Button x:Name="DeviceInfo" Grid.Row="1" Grid.Column="0"
+                        Text="Device Info" Padding="10"
+                        BackgroundColor="{AppThemeBinding Light=MediumSeaGreen, Dark=Teal}" VerticalOptions="Center"
+                        Clicked="GetDeviceInfo" />
+
+
+                    <Button x:Name="Register" Grid.Row="1" Grid.Column="1"
+                        Text="Register" 
+                        BackgroundColor="{AppThemeBinding Light=MediumSeaGreen, Dark=Teal}" VerticalOptions="Center"
+                        Clicked="RegisterDeviceBtn" IsEnabled="false"/>
+
+                    <Entry x:Name="TestResultEntry" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" IsReadOnly="True"
+                        Placeholder="Test INFO DISPLAY"
+/>
+
+                    <Button x:Name="TestDeviceButton" Text="Test device" Grid.Row="3" Grid.Column="0"
+                        BackgroundColor="{AppThemeBinding Light=MediumSeaGreen, Dark=Teal}" VerticalOptions="Center"
+                        Clicked="FlashFirmwareBtn"  
+                        Padding="5" />
+
+                    <Label x:Name="TestResultFailed" Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2" VerticalOptions="Center" IsVisible="False"
+                        Text="Test Failed!!" TextColor="{AppThemeBinding Light=Crimson, Dark=Red}" Padding="10" FontSize="Large" />
+
+                    <Label x:Name="TestResultPass" Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2" VerticalOptions="Center" IsVisible="False"
+                        Text="Test Passed!!" TextColor="{AppThemeBinding Light=MediumSeaGreen, Dark=Green}" Padding="10" FontSize="Large" />
+                </Grid>
+           
+
+             </Grid>
+
+        </Grid>
+    </ScrollView>
+</ContentPage>
+    
+    

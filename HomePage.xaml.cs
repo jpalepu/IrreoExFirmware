@@ -3,11 +3,14 @@ using System.IO.Compression;
 using System.IO.Ports;
 using MS.WindowsAPICodePack.Internal;
 using Microsoft.WindowsAPICodePack.Shell;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+using Windows.ApplicationModel.Store;
+
 
 
 namespace IrreoExFirmware;
 
-public partial class DisplayConfig : ContentPage
+public partial class HomePage : ContentPage
 {
     /*
         public class Folders
@@ -38,9 +41,6 @@ public partial class DisplayConfig : ContentPage
     Version?    _versionSelected; 
     string      _port;
 
-    Executor    _executor = new Executor();
-
-
 
     public class NamedResult<T>
     {
@@ -48,14 +48,13 @@ public partial class DisplayConfig : ContentPage
         public T        Result  { get; set; }
     }
 
-    public DisplayConfig()
+    public HomePage()
 	{
 		InitializeComponent();
         
-        pickerCOM.ItemsSource = SerialPort.GetPortNames().Select(s => new NamedResult<string> { Name = s, Result = s }).ToList();
-        pickerCOM.SelectedItem = pickerCOM.ItemsSource[0];
+        PickerCOM.ItemsSource = SerialPort.GetPortNames().Select(s => new NamedResult<string> { Name = s, Result = s }).ToList();
+        PickerCOM.SelectedItem = PickerCOM.ItemsSource[0];
         Register.IsEnabled = false;
-
     }
 
     public void RadioBtnSelectVersion(object sender, CheckedChangedEventArgs e)
@@ -92,11 +91,11 @@ public partial class DisplayConfig : ContentPage
         Debug.WriteLine($"Board selected: {((string)selectVersionBtn.Content)}");
 
         _boardRev = null;
-        pickerRev.SelectedIndex = -1;
+        PickerRev.SelectedIndex = -1;
 
         _versionSelected = null;
-        pickerVersion.SelectedIndex = -1;
-        pickerVersion.ItemsSource = new List<NamedResult<Version>>();
+        PickerVersion.SelectedIndex = -1;
+        PickerVersion.ItemsSource = new List<NamedResult<Version>>();
 
     }
 
@@ -128,16 +127,16 @@ public partial class DisplayConfig : ContentPage
     public void OnPickerRevSelected(object sender, EventArgs e)
     {
 
-        if (_boardLocation != null && pickerRev.SelectedIndex >= 0)
+        if (_boardLocation != null && PickerRev.SelectedIndex >= 0)
         {
-            _boardRev = (string)pickerRev.ItemsSource[pickerRev.SelectedIndex];
-            var finalLocation = Path.Combine(_boardLocation, pickerRev.ItemsSource[pickerRev.SelectedIndex].ToString());
+            _boardRev = (string)PickerRev.ItemsSource[PickerRev.SelectedIndex];
+            var finalLocation = Path.Combine(_boardLocation, PickerRev.ItemsSource[PickerRev.SelectedIndex].ToString());
             Debug.WriteLine(finalLocation);
 
             var firmwareVersions = GetFirmwareVersionsFromPath(finalLocation);
 
-            pickerVersion.ItemsSource = firmwareVersions.OrderByDescending(n => n.Result).ToList();
-            pickerVersion.SelectedIndex = 0;
+            PickerVersion.ItemsSource = firmwareVersions.OrderByDescending(n => n.Result).ToList();
+            PickerVersion.SelectedIndex = 0;
             if (firmwareVersions.Count() > 0)
             {
                 _versionSelected = firmwareVersions.OrderByDescending(n => n.Result).First().Result;
@@ -151,9 +150,9 @@ public partial class DisplayConfig : ContentPage
     }
     public void OnPickerVersionSelected(object sender, EventArgs e)
     {
-        if (pickerVersion.ItemsSource.Count > 0 && pickerVersion.SelectedIndex >= 0)
+        if (PickerVersion.ItemsSource.Count > 0 && PickerVersion.SelectedIndex >= 0)
         {
-            _versionSelected = ((NamedResult <Version>)pickerVersion.ItemsSource[pickerVersion.SelectedIndex]).Result;
+            _versionSelected = ((NamedResult <Version>)PickerVersion.ItemsSource[PickerVersion.SelectedIndex]).Result;
             Debug.WriteLine($"Version selected: {_versionSelected}");
             FlashBtn.IsEnabled = true;
         }
@@ -169,7 +168,15 @@ public partial class DisplayConfig : ContentPage
     {
         if (_boardLocation != null && _boardRev != null)
         {
-            var finalLocation = Path.Combine(_boardLocation, pickerRev.ItemsSource[pickerRev.SelectedIndex].ToString());
+            
+            if (Application.Current.RequestedTheme == AppTheme.Dark)
+                FlashBtn.BackgroundColor = Colors.Teal;
+            else
+                FlashBtn.BackgroundColor = Colors.MediumSeaGreen;
+
+            ToggleAllButtons(false);
+
+            var finalLocation = Path.Combine(_boardLocation, PickerRev.ItemsSource[PickerRev.SelectedIndex].ToString());
             var fileName = "v" + _versionSelected.ToString() + ".zip";
 
             Debug.WriteLine($"Firmware file: {Path.Combine(finalLocation, fileName)}");
@@ -186,55 +193,43 @@ public partial class DisplayConfig : ContentPage
 
             ZipFile.ExtractToDirectory(Path.Combine(finalLocation, fileName), _tmpLocation);
 
-
-
-            //_executor.OnFlashProgress += UpdateFlashPercentage;
-            var result = await _executor.ExecuteBuild(_port, _tmpLocation);
-            //_executor.OnFlashProgress -= UpdateFlashPercentage;
+            var result = await MyExecutor.ExecuteBuild(_port, _tmpLocation);
 
             Debug.WriteLine($"Flash result: {result}");
-            //if(result == true)
-            //{
-            //    FlashPercentage.Text = "Flashed";
-            //    FlashPercentage.TextColor = Colors.Green;
-          
-            //}
-
+            if (!result)
+            {
+                if (Application.Current.RequestedTheme == AppTheme.Dark)
+                    FlashBtn.BackgroundColor = Colors.Red;
+                else
+                    FlashBtn.BackgroundColor = Colors.Crimson;
+            }
+            ToggleAllButtons(true);
 
         }
     }
-
-    //private void UpdateFlashPercentage(object sender, string s)
-    //{
-    //    FlashPercentage.Text = s;
-    //}
+    private void ToggleAllButtons(bool status)
+    {
+        FlashBtn.IsEnabled = status;
+        DeviceInfo.IsEnabled = status;
+        TestDeviceButton.IsEnabled = status;
+    }
 
     public async void GetDeviceInfo(object sender, EventArgs e)
     {
         //has to be done. return the info of the device which is the uid.  maybe it would be good if we get this info from the flash button itself..
-        entry2.IsEnabled = false;
-        entry2.Text = "Retrieving data...";
-        DeviceInfo.IsEnabled = false;
-        string DeviceUID = await _executor.ExecuteMonitor(_port);
-        entry2.Text = DeviceUID;
-        entry2.IsEnabled = true;
-        DeviceInfo.IsEnabled = true;
-    }
-    private void Slider_OnValueChanged(object? sender, ValueChangedEventArgs e)
-    {
+        InfoResultEntry.IsEnabled = false;
+        InfoResultEntry.Text = "Retrieving data...";
+        ToggleAllButtons(false);
+        Register.IsEnabled = false;
 
-		int maxProgressbarValue = 100;
-		var taskbarInstance = Microsoft.WindowsAPICodePack.Taskbar.TaskbarManager.Instance;
-		taskbarInstance.SetProgressState(Microsoft.WindowsAPICodePack.Taskbar.TaskbarProgressBarState.Normal);
-		taskbarInstance.SetProgressValue((int)e.NewValue, maxProgressbarValue);
-
-		if (e.NewValue >= maxProgressbarValue)
-		{
-			taskbarInstance.SetProgressState(Microsoft.WindowsAPICodePack.Taskbar.TaskbarProgressBarState.NoProgress);
-            
-		}
+        string DeviceUID = await MyExecutor.ExecuteMonitor(_port);
+        InfoResultEntry.Text = DeviceUID;
+        InfoResultEntry.IsEnabled = true;
+        ToggleAllButtons(true);
+        Register.IsEnabled = true;
     }
-   
+
+
     public void RegisterDeviceBtn(object sender, EventArgs e)
     {
 

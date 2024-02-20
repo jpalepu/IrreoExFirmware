@@ -6,7 +6,7 @@
         {
             InitializeComponent();
 
-            MainPage = new DisplayConfig();
+            MainPage = new AppShell();
         }
     }
 }

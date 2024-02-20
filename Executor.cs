@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -40,7 +41,7 @@ namespace IrreoExFirmware
 
         public event PropertyChangedEventHandler PropertyChanged;
         
-            private string _progressState;
+            private string _progressState = "";
 
             public string ProgressState
             {
@@ -50,18 +51,20 @@ namespace IrreoExFirmware
                     if (_progressState != value)
                     {
                         _progressState = value;
-                        OnPropertyChanged(nameof(ProgressState));
+                        OnPropertyChanged();
                     }
                 }
             }
 
-            public void OnPropertyChanged(string propertyName)
-            {
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-            }
+            //public void OnPropertyChanged(string propertyName)
+            //{
+            //    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            //}
 
+        public void OnPropertyChanged([CallerMemberName] string name = "") =>
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 
-    public void Dispose()
+        public void Dispose()
         {
             if (_proc != null)
             {
@@ -88,6 +91,8 @@ namespace IrreoExFirmware
             {
                 _cts = new CancellationTokenSource();
             }
+
+            ProgressState = "0";
 
             string findID = @"MAC: ([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})";
             //ProcessStartInfo startInfo = new ProcessStartInfo() { FileName = "powershell.exe", 
@@ -135,6 +140,8 @@ namespace IrreoExFirmware
 
                         Debug.WriteLine("Progress %: " + ProgressState);
                         OnPropertyChanged(nameof(ProgressState));
+                        
+                        
                         //OnFlashProgress?.Invoke(this, perc);
 
 

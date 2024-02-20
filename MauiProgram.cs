@@ -25,16 +25,11 @@ namespace IrreoExFirmware
                     {
                         IWindow window1 = new Window()
                         {
-                            MaximumWidth = 1200,
-                            MaximumHeight = 700,
-                            Width = 1000,
-                            Height = 600,
                             MinimumWidth = 1000,
                             MinimumHeight = 600
                         };
                         
-                        window.CenterOnScreen(900, 600);
-                        window.UpdateMaximumSize(window1);
+                        window.CenterOnScreen();
                         window.UpdateMinimumSize(window1);
                     });
                 });
