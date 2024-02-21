@@ -55,14 +55,8 @@ namespace IrreoExFirmware
                     }
                 }
             }
-
-            //public void OnPropertyChanged(string propertyName)
-            //{
-            //    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-            //}
-
-        public void OnPropertyChanged([CallerMemberName] string name = "") =>
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+                public void OnPropertyChanged([CallerMemberName] string name = "") =>
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 
         public void Dispose()
         {
@@ -77,7 +71,6 @@ namespace IrreoExFirmware
         {
             _cts.Cancel();
         }
-
 
         public async Task<bool> ExecuteBuild(string COM, string firmwarePath)
         {
@@ -302,16 +295,11 @@ namespace IrreoExFirmware
             {
                 _proc.Close();
                 _proc = null;
-                //_proc.Kill(true);
-
                 Debug.WriteLine("Process ended!");
             }
 
             return deviceUID;
         }
-    
-    
-    
     }
 }
 
