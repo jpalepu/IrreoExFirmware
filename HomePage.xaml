@@ -4,6 +4,7 @@
              xmlns:exec="clr-namespace:IrreoExFirmware"
              xmlns:lgn="clr-namespace:IrreoExFirmware"
              x:Class="IrreoExFirmware.HomePage"
+             
              Title="">
     
     
@@ -14,25 +15,29 @@
     <ScrollView>
         <Grid>
             <Grid.RowDefinitions>
-                <RowDefinition Height="0.25*" />
+                <RowDefinition Height="0.1*" />
+                <RowDefinition Height="0.20*" />
                 <RowDefinition Height="0.05*" />
                 <RowDefinition Height="0.7*" />
             </Grid.RowDefinitions>
 
-            <Grid.ColumnDefinitions>
+            <Grid.ColumnDefinitions >
                 <ColumnDefinition Width="0.5*" />
             </Grid.ColumnDefinitions>
 
+            <HorizontalStackLayout Grid.Row="0" HorizontalOptions="End" Padding="20,0">
+                <Button Padding="20,0" FontSize="Micro" VerticalOptions="Start"   BindingContext="{lgn:LoginBtnModel}" Text="Login" x:Name="LoginBtn" Command="{Binding LoginCommand}"/>
+            </HorizontalStackLayout>
 
-
-            <Image Grid.Row="0" Source="irreo.png" 
+            <Image Grid.Row="1" Source="irreo.png" 
                    HorizontalOptions="Center" MaximumWidthRequest="300"/>
-
-            <Label Grid.Row="1" Text="Firmware Shipment Process" TextColor="{AppThemeBinding Light=Black, Dark=White}" 
+            
+            
+            <Label Grid.Row="2" Text="Firmware Shipment Process" TextColor="{AppThemeBinding Light=Black, Dark=White}" 
                    FontSize="Medium" VerticalTextAlignment="Center" HorizontalOptions="Center" />
 
 
-            <Grid Grid.Row="2" Padding="30" >
+            <Grid Grid.Row="3" Padding="30" >
 
                 <Grid.RowDefinitions>
                     <RowDefinition Height="0.9*" />
@@ -93,8 +98,8 @@
                             Clicked="FlashFirmwareBtn" Padding="10"  
                             IsEnabled="False"/>
                 
-                    <Label x:Name="FlashPercentage" Grid.Row="5" Grid.Column="1" 
-                           Text="{Binding ProgressState, StringFormat='{0} %'}" 
+                    <Label x:Name="FlashPercentage" Grid.Row="5" Grid.Column="1"
+                           Text="{Binding ProgressState ,StringFormat ='{0} %'}" 
                            VerticalOptions="Center" HorizontalOptions="Center" FontSize="Medium" />
 
                 </Grid>
@@ -135,7 +140,7 @@
 
                     <Button x:Name="TestDeviceButton" Text="Test device" Grid.Row="3" Grid.Column="0"
                         BackgroundColor="{AppThemeBinding Light=MediumSeaGreen, Dark=Teal}" VerticalOptions="Center"
-                        Clicked="FlashFirmwareBtn"  
+                        Clicked="TestDevice"  
                         Padding="5" />
 
                     <Label x:Name="TestResultFailed" Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2" VerticalOptions="Center" IsVisible="False"

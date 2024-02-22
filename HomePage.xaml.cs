@@ -191,7 +191,6 @@ namespace IrreoExFirmware
 
         public async void GetDeviceInfo(object sender, EventArgs e)
         {
-            //has to be done. return the info of the device which is the uid.  maybe it would be good if we get this info from the flash button itself..
             InfoResultEntry.IsEnabled = false;
             InfoResultEntry.Text = "Retrieving data...";
             ToggleAllButtons(false);
@@ -208,6 +207,22 @@ namespace IrreoExFirmware
         public void RegisterDeviceBtn(object sender, EventArgs e)
         {
 
+        }
+
+        public async void TestDevice(object sender, EventArgs e)
+        {
+            InfoResultEntry.IsEnabled = false;
+            InfoResultEntry.Text = "Retrieving data...";
+            ToggleAllButtons(false);
+            Register.IsEnabled = false;
+
+            //string doneTest = await MyExecutor.ExecuteTest(_port);
+            //InfoResultEntry.Text = doneTest;
+
+            string telemetry = await MyExecutor.ExecuteTest(_port);
+            TestResultEntry.Text = telemetry;
+            ToggleAllButtons(true);
+            Register.IsEnabled = true;
         }
 
 

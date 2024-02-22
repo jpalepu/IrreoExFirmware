@@ -105,6 +105,7 @@
 	<ItemGroup>
 		<None Update=".\monitor.ps1" CopyToOutputDirectory="PreserveNewest" />
 		<None Update=".\flash.ps1" CopyToOutputDirectory="PreserveNewest" />
+		<None Update=".\auth_config.json" CopyToOutputDirectory="PreserveNewest" />
 	</ItemGroup>
 
 	<ItemGroup Condition="$(TargetFramework.Contains('-windows')) == true">

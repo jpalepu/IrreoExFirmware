@@ -232,6 +232,7 @@ namespace IrreoExFirmware
         }
 
 
+        //public async void ExecuteTest(string COM)
 
         public async Task<string> ExecuteTest(string COM)
         {
@@ -246,9 +247,9 @@ namespace IrreoExFirmware
                 _cts = new CancellationTokenSource();
             }
 
-            string deviceUID = null;
+            string Telemetry = null;
 
-            string deviceUIDRegex = @"Value: ([0-9A-Fa-f]+)";
+            string TelemetryRegex = @"Emitting telem: ([0-9A-Fa-f]{48})";
             Debug.WriteLine($"Current work directory: {AppDomain.CurrentDomain.BaseDirectory}");
             ProcessStartInfo startInfo = new ProcessStartInfo()
             {
@@ -258,7 +259,6 @@ namespace IrreoExFirmware
                 CreateNoWindow = true,
             };
             _proc = new Process() { StartInfo = startInfo, };
-            // Console.WriteLine("Starting..");
 
             _proc.StartInfo.RedirectStandardOutput = true;
             _proc.StartInfo.RedirectStandardError = true;
@@ -269,12 +269,12 @@ namespace IrreoExFirmware
                 if (data != null)
                 {
                     Debug.WriteLine(data);
-                    Match match = Regex.Match(data, deviceUIDRegex);
+                    Match match = Regex.Match(data, TelemetryRegex);
                     if (match.Success)
                     {
                         Group value = match.Groups[1];
-                        deviceUID = value.Value;
-                        Debug.WriteLine("DeviceUID: " + deviceUID);
+                        Telemetry = value.Value;
+                        Debug.WriteLine("Got Telemetry: " + Telemetry);
                         _cts.Cancel();
                     }
                 }
@@ -298,7 +298,7 @@ namespace IrreoExFirmware
                 Debug.WriteLine("Process ended!");
             }
 
-            return deviceUID;
+            return Telemetry;
         }
     }
 }

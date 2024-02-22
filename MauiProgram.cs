@@ -26,7 +26,7 @@ namespace IrreoExFirmware
                         IWindow window1 = new Window()
                         {
                             MinimumWidth = 1000,
-                            MinimumHeight = 600
+                            MinimumHeight = 650
                         };
                         
                         window.CenterOnScreen();

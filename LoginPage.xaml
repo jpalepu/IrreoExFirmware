@@ -6,14 +6,7 @@
     
     
     <VerticalStackLayout>
-        <Label 
-            Text="Login"
-            VerticalOptions="Center" 
-            HorizontalOptions="Center" />
-        
-        <Button Text="Login" Clicked="OnLoginClicked" 
-                x:Name="LoginButton"></Button>
-    
+
     
     </VerticalStackLayout>
 </ContentPage>
