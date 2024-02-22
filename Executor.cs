@@ -234,7 +234,7 @@ namespace IrreoExFirmware
 
         //public async void ExecuteTest(string COM)
 
-        public async Task<string> ExecuteTest(string COM)
+        public async Task<(bool status, string telemetry)> ExecuteTest(string COM)
         {
             if (_proc != null)
             {
@@ -248,8 +248,10 @@ namespace IrreoExFirmware
             }
 
             string Telemetry = null;
-
+            bool status = false;
+            string EvtStatus = @"EVT Detected: \+EVT:(JOINED|FAILED)";
             string TelemetryRegex = @"Emitting telem: ([0-9A-Fa-f]{48})";
+
             Debug.WriteLine($"Current work directory: {AppDomain.CurrentDomain.BaseDirectory}");
             ProcessStartInfo startInfo = new ProcessStartInfo()
             {
@@ -269,6 +271,19 @@ namespace IrreoExFirmware
                 if (data != null)
                 {
                     Debug.WriteLine(data);
+                    Match matchEVT = Regex.Match(data, EvtStatus);
+
+                    
+                    if (matchEVT.Success)
+                    {
+                        Group valueEVT = matchEVT.Groups[1];
+                        var evtvalue = matchEVT.Value;
+                        status = true;
+                        Debug.WriteLine("EVT status: " + evtvalue);
+
+                    }
+
+
                     Match match = Regex.Match(data, TelemetryRegex);
                     if (match.Success)
                     {
@@ -298,7 +313,7 @@ namespace IrreoExFirmware
                 Debug.WriteLine("Process ended!");
             }
 
-            return Telemetry;
+            return (status, Telemetry);
         }
     }
 }

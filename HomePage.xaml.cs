@@ -215,12 +215,24 @@ namespace IrreoExFirmware
             InfoResultEntry.Text = "Retrieving data...";
             ToggleAllButtons(false);
             Register.IsEnabled = false;
+            TestActivity.IsRunning = true;
+            TestActivity.IsVisible = true;
 
             //string doneTest = await MyExecutor.ExecuteTest(_port);
             //InfoResultEntry.Text = doneTest;
 
-            string telemetry = await MyExecutor.ExecuteTest(_port);
+            var result = await MyExecutor.ExecuteTest(_port);
+            bool evtstatus = result.status;
+            string telemetry = result.telemetry;
+
             TestResultEntry.Text = telemetry;
+            if(evtstatus != false && telemetry != null)
+            {
+                TestActivity.IsRunning = false;
+                TestActivity.IsVisible = false;
+                TestResultPass.Text = "JOINED";
+                TestResultPass.IsVisible = true;
+            }
             ToggleAllButtons(true);
             Register.IsEnabled = true;
         }

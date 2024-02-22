@@ -143,6 +143,8 @@
                         Clicked="TestDevice"  
                         Padding="5" />
 
+                    <ActivityIndicator Grid.Row="3" Grid.Column="1" x:Name="TestActivity"  Color="MediumSeaGreen" />
+
                     <Label x:Name="TestResultFailed" Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2" VerticalOptions="Center" IsVisible="False"
                         Text="Test Failed!!" TextColor="{AppThemeBinding Light=Crimson, Dark=Red}" Padding="10" FontSize="Large" />
 
