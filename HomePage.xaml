@@ -2,7 +2,7 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:exec="clr-namespace:IrreoExFirmware"
-             xmlns:lgn="clr-namespace:IrreoExFirmware"
+             xmlns:irreo="clr-namespace:IrreoExFirmware"
              x:Class="IrreoExFirmware.HomePage"
              
              Title="">
@@ -26,8 +26,27 @@
             </Grid.ColumnDefinitions>
 
             <HorizontalStackLayout Grid.Row="0" HorizontalOptions="End" Padding="20,0">
-                <Button Padding="20,0" FontSize="Micro" VerticalOptions="Start"   BindingContext="{lgn:LoginBtnModel}" Text="Login" x:Name="LoginBtn" Command="{Binding LoginCommand}"/>
+
+
+                <Button Padding="20,0" FontSize="Micro" 
+                        VerticalOptions="Start"   
+                        Text="Logout" x:Name="LogoutBtn" 
+                        Clicked="OnLogoutClicked"
+                        IsVisible="False"/>
+
+                <Button Padding="20,0" FontSize="Micro" 
+                        VerticalOptions="Start"   
+                       Clicked="OnLoginClicked"
+                        Text="Login" x:Name="LoginBtn"/>
+
             </HorizontalStackLayout>
+
+            <VerticalStackLayout Grid.Row="0" HorizontalOptions="Start">
+
+                <Label x:Name="nome" FontSize="Small" Text="User Not Logged in" IsVisible="True"/>
+                <Label x:Name="surname" FontSize="Small" IsVisible="True"/>
+                
+            </VerticalStackLayout>
 
             <Image Grid.Row="1" Source="irreo.png" 
                    HorizontalOptions="Center" MaximumWidthRequest="300"/>
@@ -134,9 +153,8 @@
                         BackgroundColor="{AppThemeBinding Light=MediumSeaGreen, Dark=Teal}" VerticalOptions="Center"
                         Clicked="RegisterDeviceBtn" IsEnabled="false"/>
 
-                    <Entry x:Name="TestResultEntry" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" IsReadOnly="True"
-                        Placeholder="Test INFO DISPLAY"
-/>
+                    <Editor x:Name="TestResultEntry" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" IsReadOnly="True"
+                        Placeholder="Test INFO DISPLAY" />
 
                     <Button x:Name="TestDeviceButton" Text="Test device" Grid.Row="3" Grid.Column="0"
                         BackgroundColor="{AppThemeBinding Light=MediumSeaGreen, Dark=Teal}" VerticalOptions="Center"

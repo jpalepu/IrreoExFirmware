@@ -1,26 +1,45 @@
+using CommunityToolkit.Mvvm.Input;
+using Microsoft.Identity.Client;
+using Microsoft.Maui.Controls;
 using System.Diagnostics;
 using System.IO.Compression;
 using System.IO.Ports;
+using System.Text.Json;
 
 namespace IrreoExFirmware
 {
     public partial class HomePage : ContentPage
     {
 
-        string _baseLocation = "D:\\ExFiles";
-        string _tmpLocation = "D:\\ExFiles\\tmp";
-        string _boardLocation;
-        string _boardRev;
+        string                               _baseLocation = "D:\\ExFiles";
+        
+        string                               _tmpLocation = "D:\\ExFiles\\tmp";
+        
+        string                               _boardLocation;
+        
+        string                               _boardRev;
+        
+        string                               _port;
+        
+        private string                       _name;
+        public string                        Surname                 { get; private set; } = "User not LoggedIn";
+        public string                        GivenName
+        {
+            get => _name;
+            set { if (_name != value) { _name = value; OnPropertyChanged(); } }
+        }
+        public bool                          IsLoggedIn              { get; private set; }
 
-        Version? _versionSelected;
-        string _port;
+        Version?                             _versionSelected;
 
-
+        B2CConfiguration                     B2CConfiguration        { get; set; }
+        IPublicClientApplication             B2CApplication          { get; set; }
         public class NamedResult<T>
         {
-            public string Name { get; set; }
-            public T Result { get; set; }
+            public string                    Name { get; set; }
+            public T                         Result { get; set; }
         }
+
 
         public HomePage()
         {
@@ -30,8 +49,76 @@ namespace IrreoExFirmware
             PickerCOM.ItemsSource = SerialPort.GetPortNames().Select(s => new NamedResult<string> { Name = s, Result = s }).ToList();
             PickerCOM.SelectedItem = PickerCOM.ItemsSource[0];
             Register.IsEnabled = false;
+
+
+
+            using (var stream = File.Open(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "auth_config.json"),
+                    FileMode.Open, FileAccess.Read))
+            {
+                B2CConfiguration = JsonSerializer.Deserialize<B2CConfiguration>(stream);
+            }
+
+            B2CApplication = PublicClientApplicationBuilder.Create(B2CConfiguration.ClientId)
+                .WithB2CAuthority(B2CConfiguration.Authority)
+                .WithRedirectUri(B2CConfiguration.RedirectUri)
+                .WithCacheOptions(new CacheOptions { UseSharedCache = true })
+                .Build();
+
         }
 
+        private async void OnLoginClicked(object sender, EventArgs e)
+        {
+            await AcquireToken();
+            
+            nome.Text = GivenName;
+            surname.Text = Surname;
+            LoginBtn.IsVisible = false;
+            LogoutBtn.IsVisible = true;
+        }
+        
+        public async Task<(string token, string givenname)> AcquireToken()
+        {
+            var accountRes = await B2CApplication.GetAccountsAsync();
+            var accountRet = accountRes.FirstOrDefault();
+
+            try
+            {
+                AuthenticationResult result = null;
+                if (accountRet != null)
+                {
+                    result = await B2CApplication.AcquireTokenSilent(B2CConfiguration.Scopes, accountRet).ExecuteAsync();
+                    if (result == null || DateTime.UtcNow >= result.ExpiresOn)
+                    {
+                        result = await B2CApplication.AcquireTokenInteractive(B2CConfiguration.Scopes).ExecuteAsync();
+                    }
+                }
+                else
+                {
+                    result = await B2CApplication.AcquireTokenInteractive(B2CConfiguration.Scopes).ExecuteAsync();
+                }
+
+                if (result != null && result.ClaimsPrincipal != null)
+                {
+                    GivenName = result.ClaimsPrincipal.Claims.Where(c => c.Type == "given_name").Select(c => c.Value).FirstOrDefault();
+                    Surname = result.ClaimsPrincipal.Claims.Where(c => c.Type == "family_name").Select(c => c.Value).FirstOrDefault();
+
+                    OnPropertyChanged(nameof(GivenName));
+                    OnPropertyChanged(nameof(Surname));
+                    Debug.WriteLine("Name: {0}, Surname: {1}, IsLogggedIn: {2}", GivenName, Surname, IsLoggedIn);
+
+                }
+
+                Debug.WriteLine("Token: " + result.AccessToken);
+                return (result.AccessToken, GivenName);
+
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Login Failed: {ex.Message}");
+            }
+            return (null, null);
+        }
+        
         public void RadioBtnSelectVersion(object sender, CheckedChangedEventArgs e)
         {
 
@@ -73,7 +160,7 @@ namespace IrreoExFirmware
             PickerVersion.ItemsSource = new List<NamedResult<Version>>();
 
         }
-
+        
         public IEnumerable<NamedResult<Version>> GetFirmwareVersionsFromPath(string path)
         {
             if (_boardLocation != null)
@@ -99,6 +186,7 @@ namespace IrreoExFirmware
 
             return new List<NamedResult<Version>>();
         }
+        
         public void OnPickerRevSelected(object sender, EventArgs e)
         {
 
@@ -123,6 +211,7 @@ namespace IrreoExFirmware
                 }
             }
         }
+        
         public void OnPickerVersionSelected(object sender, EventArgs e)
         {
             if (PickerVersion.ItemsSource.Count > 0 && PickerVersion.SelectedIndex >= 0)
@@ -132,6 +221,7 @@ namespace IrreoExFirmware
                 FlashBtn.IsEnabled = true;
             }
         }
+        
         public void OnPickerCOMSelected(object sender, EventArgs e)
         {
             var pickerCOM = sender as Picker;
@@ -139,6 +229,7 @@ namespace IrreoExFirmware
             _port = port.Result;
             Debug.WriteLine($"Port selected: {_port}");
         }
+        
         public async void FlashFirmwareBtn(object sender, EventArgs e)
         {
             if (_boardLocation != null && _boardRev != null)
@@ -182,13 +273,14 @@ namespace IrreoExFirmware
 
             }
         }
+        
         private void ToggleAllButtons(bool status)
         {
             FlashBtn.IsEnabled = status;
             DeviceInfo.IsEnabled = status;
             TestDeviceButton.IsEnabled = status;
         }
-
+        
         public async void GetDeviceInfo(object sender, EventArgs e)
         {
             InfoResultEntry.IsEnabled = false;
@@ -202,13 +294,7 @@ namespace IrreoExFirmware
             ToggleAllButtons(true);
             Register.IsEnabled = true;
         }
-
-
-        public void RegisterDeviceBtn(object sender, EventArgs e)
-        {
-
-        }
-
+        
         public async void TestDevice(object sender, EventArgs e)
         {
             InfoResultEntry.IsEnabled = false;
@@ -228,14 +314,31 @@ namespace IrreoExFirmware
             TestResultEntry.Text = telemetry;
             if(evtstatus != false && telemetry != null)
             {
+                string combinedtext = $"Join Status: {(evtstatus ? "joined" : "failed")}\nTelemetry: {telemetry}";
+                TestResultEntry.Text = combinedtext;
                 TestActivity.IsRunning = false;
                 TestActivity.IsVisible = false;
-                TestResultPass.Text = "JOINED";
                 TestResultPass.IsVisible = true;
             }
             ToggleAllButtons(true);
             Register.IsEnabled = true;
         }
+        
+        public void RegisterDeviceBtn(object sender, EventArgs e)
+        {
+
+
+        }
+        private void OnLogoutClicked(object sender, EventArgs e)
+        {
+            Debug.WriteLine("Logout called..");
+            LogoutBtn.IsVisible = false;
+            LoginBtn.IsVisible = true;
+            nome.Text = "user not logged in";
+            surname.Text = "";
+        }
+
+
 
 
     }
