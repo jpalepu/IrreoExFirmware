@@ -32,11 +32,13 @@
                         VerticalOptions="Start"   
                         Text="Logout" x:Name="LogoutBtn" 
                         Clicked="OnLogoutClicked"
+                        BackgroundColor="{AppThemeBinding Light=MediumSeaGreen, Dark=Teal}"
                         IsVisible="False"/>
 
                 <Button Padding="20,0" FontSize="Micro" 
                         VerticalOptions="Start"   
-                       Clicked="OnLoginClicked"
+                        Clicked="OnLoginClicked"
+                        BackgroundColor="{AppThemeBinding Light=MediumSeaGreen, Dark=Teal}"
                         Text="Login" x:Name="LoginBtn"/>
 
             </HorizontalStackLayout>

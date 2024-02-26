@@ -68,12 +68,18 @@ namespace IrreoExFirmware
 
         private async void OnLoginClicked(object sender, EventArgs e)
         {
-            await AcquireToken();
-            
-            nome.Text = GivenName;
-            surname.Text = Surname;
-            LoginBtn.IsVisible = false;
-            LogoutBtn.IsVisible = true;
+            var TokenRes = await AcquireToken();
+            if(TokenRes.token != null)
+            {
+                nome.Text = GivenName;
+                surname.Text = Surname;
+                LoginBtn.IsVisible = false;
+                LogoutBtn.IsVisible = true;
+            }
+            else
+            {
+                nome.Text = "Login failed, retry again";
+            }
         }
         
         public async Task<(string token, string givenname)> AcquireToken()
@@ -329,13 +335,18 @@ namespace IrreoExFirmware
 
 
         }
-        private void OnLogoutClicked(object sender, EventArgs e)
+        private async void OnLogoutClicked(object sender, EventArgs e)
         {
             Debug.WriteLine("Logout called..");
             LogoutBtn.IsVisible = false;
             LoginBtn.IsVisible = true;
             nome.Text = "user not logged in";
             surname.Text = "";
+
+            var accountRes = await B2CApplication.GetAccountsAsync();
+            var accountRet = accountRes.FirstOrDefault();
+            await B2CApplication.RemoveAsync(accountRet);
+
         }
 
 
